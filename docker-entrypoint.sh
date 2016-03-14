@@ -1,17 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "!!!!!!!!!!"
-echo "$@ | $0 | $1 | $2"
-echo "!!!!!!!!!!"
-touch /root/xxx 
-
 if [ "${1:0:1}" = '-' ]; then
 	set -- postgres "$@"
 fi
-
-
-
 
 if [ "$1" = 'postgres' ]; then
 	mkdir -p "$PGDATA"
@@ -51,12 +43,23 @@ if [ "$1" = 'postgres' ]; then
 
 		{ echo; echo "host all all 0.0.0.0/0 $authMethod"; } >> "$PGDATA/pg_hba.conf"
 
+
+		############################################################################
+
 		echo "listen_addresses='*'" >> "$PGDATA/postgresql.conf"
 		echo "max_prepared_transactions = 100" >> "$PGDATA/postgresql.conf"
+		echo "fsync = off" >> "$PGDATA/postgresql.conf"
 
-		if [ "$ROLE" = "shard" ]; then
+		if [ "$ROLE" = 'shard' ]; then
 			echo "shared_preload_libraries = 'pg_tsdtm'" >> "$PGDATA/postgresql.conf"
 		fi
+
+		if [ "$TSDTM" = 'yes' ]; then
+			echo "postgres_fdw.use_tsdtm = 1" >> "$PGDATA/postgresql.conf"
+		fi
+
+		############################################################################
+
 
 		# internal start of server in order to allow set-up using psql-client		
 		# does not listen on TCP/IP and waits until start finishes
@@ -87,9 +90,32 @@ if [ "$1" = 'postgres' ]; then
 		EOSQL
 		echo
 
+
+		############################################################################
+
 		"${psql[@]}" -U postgres "$POSTGRES_DB" <<-EOSQL
 			CREATE TABLE t(u integer primary key, v integer);
 		EOSQL
+
+		if [ "$ROLE" = "shard" ]; then
+			"${psql[@]}" -U postgres "$POSTGRES_DB" <<-EOSQL
+				CREATE EXTENSION pg_tsdtm;
+			EOSQL
+		fi
+
+		if [ "$ROLE" = "master" ]; then
+			"${psql[@]}" -U postgres "$POSTGRES_DB" <<-EOSQL
+				CREATE EXTENSION postgres_fdw;
+				CREATE SERVER shard1 FOREIGN DATA WRAPPER postgres_fdw options(dbname 'xtm', host 'shard1', port '5432');
+				CREATE FOREIGN TABLE t_fdw1() inherits (t) server shard1 options(table_name 't');
+				CREATE USER MAPPING for xtm SERVER shard1 options (user 'xtm');
+				CREATE SERVER shard2 FOREIGN DATA WRAPPER postgres_fdw options(dbname 'xtm', host 'shard2', port '5432');
+				CREATE FOREIGN TABLE t_fdw2() inherits (t) server shard2 options(table_name 't');
+				CREATE USER MAPPING for xtm SERVER shard2 options (user 'xtm');
+			EOSQL
+		fi
+
+		############################################################################
 
 		psql+=( --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" )
 

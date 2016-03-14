@@ -1,22 +1,31 @@
 version: '2'
+
 services:
-  shard1:
-    build: .
-    environment:
-      ROLE: 'shard'
-      POSTGRES_USER: 'xtm'
-  shard2:
-    build: .
-    environment:
-      ROLE: 'shard'
-      POSTGRES_USER: 'xtm'
+
   master:
     build: .
     environment:
-      ROLE: 'master'
       POSTGRES_USER: 'xtm'
+      TSDTM: 'yes'
+      ROLE: 'master'
     ports:
       - "5432:5432"
     depends_on:
       - shard1
       - shard2
+
+  shard1:
+    build: .
+    environment:
+      POSTGRES_USER: 'xtm'
+      TSDTM: 'yes'
+      ROLE: 'shard'
+
+  shard2:
+    build: .
+    environment:
+      POSTGRES_USER: 'xtm'
+      TSDTM: 'yes'
+      ROLE: 'shard'
+
+
