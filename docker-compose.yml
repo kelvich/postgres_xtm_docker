@@ -6,7 +6,7 @@ services:
     build: .
     environment:
       POSTGRES_USER: 'xtm'
-      TSDTM: 'yes'
+      # TSDTM: 'yes'
       ROLE: 'master'
     ports:
       - "5432:5432"
@@ -18,14 +18,14 @@ services:
     build: .
     environment:
       POSTGRES_USER: 'xtm'
-      TSDTM: 'yes'
+      # TSDTM: 'yes'
       ROLE: 'shard'
 
   shard2:
     build: .
     environment:
       POSTGRES_USER: 'xtm'
-      TSDTM: 'yes'
+      # TSDTM: 'yes'
       ROLE: 'shard'
 
 
