@@ -1,10 +1,10 @@
 CXX=g++
 CXXFLAGS=-g -Wall -O2 -pthread
 
-all: dtmbench
+all: xtmbench
 
-dtmbench: dtmbench.cpp
-	$(CXX) $(CXXFLAGS) -o dtmbench dtmbench.cpp -lpqxx
+xtmbench: xtmbench.cpp
+	$(CXX) $(CXXFLAGS) -o xtmbench xtmbench.cpp -lpqxx
 
 clean:
-	rm -f dtmbench
+	rm -f xtmbench

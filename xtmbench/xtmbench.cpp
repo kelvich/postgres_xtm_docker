@@ -169,8 +169,6 @@ void initializeDatabase()
 
 int main (int argc, char* argv[])
 {
-    bool initialize = false;
-
     if (argc == 1){
         printf("Use -h to show usage options\n");
         return 1;
@@ -200,9 +198,6 @@ int main (int argc, char* argv[])
             case 's':
                 cfg.nShards = atoi(argv[++i]);
                 continue;
-            // case 'i':
-            //     initialize = true;
-            //     continue;
             }
         }
         printf("Options:\n"
