@@ -20,7 +20,7 @@ We can ran it over our installation with postgres_fdw.
 ```bash
 > cd xtmbench
 > make
-> ./dtmbench -c 'host=192.168.99.100 user=xtm' -n 300
+> ./xtmbench -c 'host=192.168.99.100 user=xtm' -n 300
 10000 accounts inserted
 Total=-1
 Total=0
