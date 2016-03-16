@@ -1,6 +1,6 @@
 # postgres_xtm_docker
 
-To start a container run following commands inside :
+To start a container run following commands:
 
 ```bash
 > git clone https://github.com/kelvich/postgres_xtm_docker.git
@@ -13,7 +13,7 @@ That will start three containers with postgres: one for master, and two for shar
 
 ## Testing
 
-Now we can connect to postgres and try to play around that setup. But it is hard to notice non-transactional behaviour in postgres_fdw from a single user session. So we are providing simple test that simple test for distributed transaction (requires libpqxx). This test fill database with users across two shard and then starts to concurrently transfers money between users in dufferent shards.
+Now we can connect to postgres and try to play around that setup. But it is hard to notice non-transactional behaviour in postgres_fdw from a single user session. So we are providing simple test for distributed transaction (requires libpqxx). This test fill database with users across two shard and then starts to concurrently transfers money between users in dufferent shards.
 
 Money transfer transactions looks as following:
 
@@ -48,6 +48,9 @@ Total=0
 Total=1
 Total=0
 ...
+{"tps":134.423409, "transactions":3300, "selects":62, "updates":6000,
+"aborts":6, "abort_percent": 0, "readers":1, "writers":10, "update_percent":100,
+"accounts":10000, "iterations":300 ,"shards":2}
 ```
 
 Total amount of money is fluctuating because reading transaction can access state between commits over two shards. Total is printed every time it is changes from previous stored value.
