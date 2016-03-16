@@ -1,5 +1,9 @@
 # postgres_xtm_docker
 
+About the project: https://wiki.postgresql.org/wiki/DTM
+
+
+
 To start a container run following commands:
 
 ```bash
