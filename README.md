@@ -9,11 +9,28 @@ To start a container run following commands inside :
 > docker-compose up
 ```
 
-That will start three containers with postgres: one for master, and two for shard connected by postgres_fdw. 
+That will start three containers with postgres: one for master, and two for shard connected by postgres_fdw. Also it creates two postgres_fdw tables connected to shards and inherited from table "t" on master. By default we turn off TSDTM, change TSDTM: 'yes' in Dockerfile to turn it on.
 
 ## Testing
 
-In xtmbemch folder we have simple test for distributed transaction (requires libpqxx). This test fill database with users across two shard and then starts to concurrently transfers money between users in dufferent shards. Also test simultaneously runs reader thread that counts all money in system.
+Now we can connect to postgres and try to play around that setup. But it is hard to notice non-transactional behaviour in postgres_fdw from a single user session. So we are providing simple test that simple test for distributed transaction (requires libpqxx). This test fill database with users across two shard and then starts to concurrently transfers money between users in dufferent shards.
+
+Money transfer transactions looks as following:
+
+```sql
+begin;
+update t set v = v - 1 where u=%d; -- this is user from t_fdw1, first shard
+update t set v = v + 1 where u=%d; -- this is user from t_fdw2, second shard
+commit;
+```
+
+Also test simultaneously runs reader thread that counts all money in system:
+
+```sql
+select sum(v) from t;
+```
+
+So in transactional system we expect that sum should be always constant (zero in our case, as we initialize user with zero balance).
 
 We can ran it over our installation with postgres_fdw.
 
@@ -33,7 +50,7 @@ Total=0
 ...
 ```
 
-Total amount of money is fluctuating because reading transaction can access state between commits over two shards.
+Total amount of money is fluctuating because reading transaction can access state between commits over two shards. Total is printed every time it is changes from previous stored value.
 
 Now let's uncomment "TSDTM: 'yes'" in environment section in docker-compose.yml and restart caontainers:
 
@@ -46,4 +63,4 @@ Now let's uncomment "TSDTM: 'yes'" in environment section in docker-compose.yml 
 "accounts":10000, "iterations":300 ,"shards":2}
 ```
 
-Now Total value is not changing over time.
+Now total value is not changing over time.
