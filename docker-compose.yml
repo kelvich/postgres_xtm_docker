@@ -2,28 +2,30 @@ version: '2'
 
 services:
 
-  node1:
+  master:
     build: .
     environment:
       POSTGRES_USER: 'xtm'
-      NODE_ID: 1
+      # TSDTM: 'yes'
+      ROLE: 'master'
     ports:
       - "5432:5432"
+    depends_on:
+      - shard1
+      - shard2
 
-  node2:
+  shard1:
     build: .
     environment:
       POSTGRES_USER: 'xtm'
-      NODE_ID: 2
-    ports:
-      - "5433:5432"
+      # TSDTM: 'yes'
+      ROLE: 'shard'
 
-  node3:
+  shard2:
     build: .
     environment:
       POSTGRES_USER: 'xtm'
-      NODE_ID: 3
-    ports:
-      - "5434:5432"
+      # TSDTM: 'yes'
+      ROLE: 'shard'
 
 
