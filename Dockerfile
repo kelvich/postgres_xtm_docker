@@ -42,7 +42,7 @@ RUN chown postgres:postgres /pg
 USER postgres
 WORKDIR /pg
 ENV CFLAGS -O0
-RUN git clone  -b xtm_patch https://github.com/postgrespro/postgres_cluster.git --depth 1
+RUN git clone https://github.com/postgrespro/postgres_cluster.git --depth 1
 WORKDIR /pg/postgres_cluster
 RUN ./configure  --enable-cassert --enable-debug --prefix /usr/local
 RUN make -j 4
@@ -50,6 +50,8 @@ RUN make -j 4
 USER root
 RUN make install
 RUN cd /pg/postgres_cluster/contrib/pg_tsdtm && make install
+RUN cd /pg/postgres_cluster/contrib/raftable && make install
+RUN cd /pg/postgres_cluster/contrib/mmts && make install
 RUN cd /pg/postgres_cluster/contrib/postgres_fdw && make install
 
 RUN mkdir -p /var/run/postgresql && chown -R postgres /var/run/postgresql
